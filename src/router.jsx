@@ -2,7 +2,6 @@ import { createBrowserRouter } from "react-router";
 import Foods from "./pages/Foods/Foods";
 import Rootlayout from "./layouts/Rootlayout";
 import FoodDetail from "./pages/FoodDetail/FoodDetail";
-import PaymentStatus from "./pages/PaymentStatus/PaymentStatus";
 import CartPage from "./pages/Cart/CartPage";
 import Register from "./pages/Auth/Register/Register";
 import AuthLayout from "./layouts/AuthLayout/AuthLayout";
@@ -11,6 +10,9 @@ import Orders from "./pages/orders/Orders";
 import OrderDetail from "./pages/orders/OrderDetail";
 import Profile from "./pages/Auth/Profile/Profile";
 import BecomeRider from "./components/Become_rider/BecomeRider";
+import PaymentSuccessPage from "./pages/PaymentStatus/PaymentSuccessPage";
+import PaymentFailPage from "./pages/PaymentStatus/PaymentFailPage";
+import PaymentCancelPage from "./pages/PaymentStatus/PaymentCancelPage";
 
 const router = createBrowserRouter([
   {
@@ -26,8 +28,16 @@ const router = createBrowserRouter([
         element: <FoodDetail />,
       },
       {
-        path: "/payment-status",
-        element: <PaymentStatus />,
+        path: "/payment/success/:orderId",
+        element: <PaymentSuccessPage />,
+      },
+      {
+        path: "/payment/fail/:orderId",
+        element: <PaymentFailPage />,
+      },
+      {
+        path: "/payment/cancel/:orderId",
+        element: <PaymentCancelPage />,
       },
       {
         path: "/cart",

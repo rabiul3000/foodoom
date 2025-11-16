@@ -1,8 +1,10 @@
-import { useSearchParams } from "react-router";
+import { useParams, useSearchParams } from "react-router";
 
 const PaymentStatus = () => {
+  const { status } = useParams();
   const [searchParams] = useSearchParams();
-  const status = searchParams.get("status");
+
+  const orderId = searchParams.get("orderId");
 
   let message = "";
   let color = "";
@@ -14,24 +16,17 @@ const PaymentStatus = () => {
     message = "❌ Payment Failed. Please try again.";
     color = "red";
   } else if (status === "cancel") {
-    message = "⚠️ Payment Cancelled by user.";
+    message = "⚠️ Payment Cancelled.";
     color = "orange";
   } else {
     message = "Unknown payment status.";
+    color = "gray";
   }
 
   return (
-    <div
-      style={{
-        textAlign: "center",
-        padding: "40px",
-        fontFamily: "sans-serif",
-      }}
-    >
+    <div style={{ textAlign: "center", padding: "40px" }}>
       <h2 style={{ color }}>{message}</h2>
-      <a href="/" style={{ textDecoration: "underline", color: "blue" }}>
-        Go back to home
-      </a>
+      <p>Order ID: {orderId}</p>
     </div>
   );
 };

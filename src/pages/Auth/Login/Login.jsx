@@ -2,10 +2,7 @@ import React, { useContext } from "react";
 import AuthContext from "../../../contexts/AuthContext";
 
 const Login = () => {
-  const { signInWithGoogle } = useContext(AuthContext);
-
-  
-
+  const { signInWithGoogle, loading } = useContext(AuthContext);
 
   return (
     <div className="hero bg-base-200 min-h-screen">
@@ -17,8 +14,9 @@ const Login = () => {
                 type="button"
                 className="btn btn-secondary mt-4"
                 onClick={signInWithGoogle}
+                disabled={loading}
               >
-                Sign In With Google
+                {loading ? "Loading..." : "Sign In With Google"}
               </button>
               <button className="btn btn-secondary mt-4" disabled type="button">
                 Login With Email

@@ -59,6 +59,7 @@ const useOrdersActions = () => {
       const { data } = await axiosPublic.post("/payments", {
         orderId: order._id,
       });
+      console.log(data)
       if (data) window.location.href = data.url;
     } catch (error) {
       console.log(error.message);
