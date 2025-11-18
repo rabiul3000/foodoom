@@ -16,7 +16,7 @@ const AddToCartButton = ({ food }) => {
 
   return (
     <button
-      className="btn btn-sm btn-secondary rounded-full px-4"
+      className="btn btn-sm btn-secondary rounded-full "
       onClick={handleAddToCart}
     >
       Add To Cart

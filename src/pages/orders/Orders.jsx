@@ -1,30 +1,100 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useCallback, useContext, useEffect, useState } from "react";
 import AuthContext from "../../contexts/AuthContext";
 
-import useOrdersActions from "../../hooks/useOrdersAction";
 import LargeLoading from "../../utils/LargeLoading";
 import OrdersTableUser from "../../components/Tables/OrdersTableUser";
+import { axiosPublic } from "../../axios/axiosPublic";
+import { errorAlert, successAlert } from "../../utils/alert";
+import { filterKeyWords, tableHeaders } from "../../utils/arrays";
+import { useNavigate } from "react-router";
 
 const Orders = () => {
   const { user } = useContext(AuthContext);
+  const navigate = useNavigate();
   const [selectedButton, setSelectedButton] = useState(null);
-  const filterKeyWords = [
-    "oldest",
-    "latest",
-    "pending",
-    "confirmed",
-    "delivered",
-    "cancelled",
-    "paid",
-    "unpaid",
-    "all",
-  ];
+  const [loading, setLoading] = useState(false);
+  const [orders, setOrders] = useState([]);
 
-  const { getAllOrders, orders, loading, filterArr } = useOrdersActions();
+  const getAllOrders = useCallback(async (user) => {
+    try {
+      setLoading(true);
+      const { data } = await axiosPublic.get(`orders/${user?.id}`);
+      if (data) {
+        console.log(data);
+        setOrders(data);
+      }
+    } catch (error) {
+      console.log(error.message);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     getAllOrders(user);
   }, [user, getAllOrders]);
+
+  const deleteOrder = async (orderId) => {
+    const { data, status } = await axiosPublic.delete(`/orders/${orderId}`);
+    if (status === 200) {
+      console.log(data);
+      const id = data.deletedOrder._id;
+      setOrders((prevOrders) => prevOrders.filter((item) => item._id !== id));
+      successAlert("Order deleted");
+    }
+  };
+
+  const filterArr = async (status) => {
+    try {
+      setLoading(true);
+      console.log(status);
+      if (status === "all") {
+        getAllOrders(user);
+        return;
+      }
+      if (status === "latest") {
+        setOrders((prev) =>
+          [...prev].sort(
+            (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+          )
+        );
+        return;
+      }
+
+      if (status === "oldest") {
+        setOrders((prev) =>
+          [...prev].sort(
+            (a, b) => new Date(a.createdAt) - new Date(b.createdAt)
+          )
+        );
+        return;
+      }
+
+      const { data } = await axiosPublic.post("orders/filterOrders", {
+        userId: user?.id,
+        filterValue: status,
+      });
+      setOrders(data.orders);
+    } catch (error) {
+      errorAlert(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const payOrder = async (order) => {
+    try {
+      const { data } = await axiosPublic.post("/payments", {
+        orderId: order._id,
+      });
+      if (data?.url) window.location.replace(data.url);
+    } catch (error) {
+      console.log(error.message);
+    }
+  };
+
+  const showOrder = (order) =>
+    navigate(`/orders/${order._id}`, { state: order });
 
   return (
     <div className="w-11/12 mx-auto flex flex-col gap-8">
@@ -63,19 +133,20 @@ const Orders = () => {
             {/* head */}
             <thead>
               <tr>
-                <th>Order ID</th>
-                <th>Trans.ID</th>
-                <th>Total Amount</th>
-                <th>Payment Status</th>
-                <th>Payment Method</th>
-                <th>Order Status</th>
-                <th>Order At</th>
-                <th>Actions</th>
+                {tableHeaders.map((header) => (
+                  <th key={header}>{header}</th>
+                ))}
               </tr>
             </thead>
             <tbody>
               {orders?.map((order) => (
-                <OrdersTableUser key={order._id} order={order} />
+                <OrdersTableUser
+                  key={order._id}
+                  order={order}
+                  deleteOrder={deleteOrder}
+                  payOrder={payOrder}
+                  showOrder={showOrder}
+                />
               ))}
             </tbody>
           </table>

@@ -17,7 +17,7 @@ const Food = ({ food }) => {
   } = food;
 
   return (
-    <article className="card bg-base-100 shadow-md hover:shadow-xl transition-all duration-300 border border-base-200 rounded-2xl overflow-hidden">
+    <article className="card bg-base-100 shadow-md hover:shadow-xl transition-all duration-300 border border-base-200 rounded-2xl overflow-hidden flex flex-col h-full">
       {/* Image Section */}
       <figure className="relative aspect-[4/3] bg-base-200 overflow-hidden">
         <img
@@ -39,48 +39,49 @@ const Food = ({ food }) => {
       </figure>
 
       {/* Content Section */}
-      <div className="card-body p-4">
-        <h2 className="card-title text-lg font-bold text-base-content line-clamp-1">
-          {name}
-        </h2>
-        <p className="text-sm text-gray-500 line-clamp-2">{description}</p>
+      <div className="card-body p-4 flex flex-col justify-between flex-1">
+        <div>
+          <h2 className="card-title text-lg md:text-xl font-bold text-base-content line-clamp-1">
+            {name}
+          </h2>
+          <p className="text-sm md:text-base text-gray-500 line-clamp-3 mt-1">
+            {description}
+          </p>
 
-        {/* Ingredients Tags */}
-        {ingredients && ingredients.length > 0 && (
-          <div className="flex flex-wrap gap-2 mt-2">
-            {ingredients.slice(0, 4).map((item, index) => (
-              <span
-                key={index}
-                className="badge badge-outline badge-sm gap-1 flex items-center"
-              >
-                <FaLeaf className="text-success text-xs" />
-                {item}
-              </span>
-            ))}
-            {ingredients.length > 4 && (
-              <span className="badge badge-ghost badge-sm">
-                +{ingredients.length - 4} more
-              </span>
-            )}
-          </div>
-        )}
+          {/* Ingredients Tags */}
+          {ingredients && ingredients.length > 0 && (
+            <div className="flex flex-wrap gap-2 mt-2">
+              {ingredients.slice(0, 4).map((item, index) => (
+                <span
+                  key={index}
+                  className="badge badge-outline badge-sm gap-1 flex items-center"
+                >
+                  <FaLeaf className="text-success text-xs md:text-sm" />
+                  {item}
+                </span>
+              ))}
+              {ingredients.length > 4 && (
+                <span className="badge badge-ghost badge-sm md:text-sm">
+                  +{ingredients.length - 4} more
+                </span>
+              )}
+            </div>
+          )}
+        </div>
+        <div className="flex items-center gap-1 text-primary font-semibold text-lg md:text-xl">
+          <FaBangladeshiTakaSign />
+          {unit_price?.toFixed(2)}
+        </div>
 
-        {/* Price and Button */}
-        <div className="flex justify-between items-center mt-4">
-          <div className="flex items-center gap-1 text-primary font-semibold text-lg">
-            <FaBangladeshiTakaSign />
-            {unit_price?.toFixed(2)}
-          </div>
-          <div className="flex gap-2">
-            <Link
-              to={`/foods/${_id}`}
-              className="btn btn-sm btn-primary rounded-full px-4"
-            >
-              View Details
-            </Link>
-
-            <AddToCartButton food={food} />
-          </div>
+        {/* Price and Buttons */}
+        <div className="flex gap-2 justify-between">
+          <Link
+            to={`/foods/${_id}`}
+            className="btn btn-sm btn-primary rounded-full"
+          >
+            View Details
+          </Link>
+          <AddToCartButton food={food} />
         </div>
       </div>
     </article>

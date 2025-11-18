@@ -13,14 +13,13 @@ const Navlinks = () => {
   ];
 
   return (
-    <div>
+    <>
       {links.map(({ path, name }) => (
-        <Link to={path} key={name} className="btn btn-primary btn-soft mx-2">
-          {" "}
-          {name}{" "}
-        </Link>
+        <li key={path}>
+          <Link to={path}>{name}</Link>
+        </li>
       ))}
-    </div>
+    </>
   );
 };
 export default Navlinks;

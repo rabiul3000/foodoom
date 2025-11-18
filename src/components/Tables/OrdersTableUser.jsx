@@ -1,10 +1,8 @@
-import useOrdersActions from "../../hooks/useOrdersAction";
 import { format } from "date-fns";
 import { RiDeleteBinLine } from "react-icons/ri";
 import { IoEyeOutline } from "react-icons/io5";
 
-const OrdersTableUser = ({ order }) => {
-  const { showOrder, payOrder, deleteOrder } = useOrdersActions();
+const OrdersTableUser = ({ order, deleteOrder, showOrder, payOrder }) => {
   const {
     _id,
     transactionId,
@@ -65,7 +63,7 @@ const OrdersTableUser = ({ order }) => {
         </button>
         <button
           className="btn delete_order btn-sm text-lg btn-square text-error"
-          onClick={() => deleteOrder(order)}
+          onClick={() => deleteOrder(order._id)}
         >
           <RiDeleteBinLine />
         </button>

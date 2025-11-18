@@ -29,7 +29,7 @@ const CartProvider = ({ children }) => {
           return {
             ...item,
             piece: newPiece,
-            total_price: item.unit_price * newPiece,  
+            total_price: item.unit_price * newPiece,
           };
         }
         return item;
@@ -41,12 +41,17 @@ const CartProvider = ({ children }) => {
     setCart((prev) => prev.filter((item) => item._id !== id));
   };
 
+  const emptyCart = () => {
+    setCart([]);
+  };
+  
   const cartInfo = {
     cart,
     setCart,
     increamentPieceOfItemInCart,
     decreamentPieceOfItemInCart,
     deleteItemFromCart,
+    emptyCart,
   };
 
   return (

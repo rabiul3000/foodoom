@@ -1,17 +1,22 @@
 import React, { useContext, useState } from "react";
 import CartContext from "../../contexts/CartContext";
-import { errorAlert } from "../../utils/alert";
+import { errorAlert, successAlert } from "../../utils/alert";
 import { axiosSecure } from "../../axios/axiosSecure";
+import { useNavigate } from "react-router";
 
 const CheckoutCard = () => {
-  const { cart } = useContext(CartContext);
+  const { cart, emptyCart } = useContext(CartContext);
   const [loading, setLoading] = useState(false);
-
+  const navigate = useNavigate();
   const handlePlaceOrder = async () => {
     try {
       setLoading(true);
       const { data } = await axiosSecure.post(`/orders`, { cart });
-      if (data) window.location.href = "/foods";
+      if (data) {
+        emptyCart();
+        successAlert("Order placed successfully");
+        navigate("/orders");
+      }
     } catch (error) {
       errorAlert(error.message);
     } finally {
