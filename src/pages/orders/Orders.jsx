@@ -47,7 +47,6 @@ const Orders = () => {
   const filterArr = async (status) => {
     try {
       setLoading(true);
-      console.log(status);
       if (status === "all") {
         getAllOrders(user);
         return;
@@ -77,6 +76,7 @@ const Orders = () => {
       setOrders(data.orders);
     } catch (error) {
       errorAlert(error.message);
+      console.log(error);
     } finally {
       setLoading(false);
     }

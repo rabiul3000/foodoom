@@ -25,7 +25,7 @@ const AuthProvider = ({ children }) => {
       setUser(userInfo);
 
       // Save user to backend (Mongo)
-      const res = await axiosPublic.post("/users", { userInfo });
+      const res = await axiosPublic.post("/users/new", { userInfo });
       if (res.data) {
         // Force token refresh to get custom claims immediately
         await loggedUser.getIdToken(true);
