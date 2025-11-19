@@ -11,7 +11,7 @@ const CheckoutCard = () => {
   const handlePlaceOrder = async () => {
     try {
       setLoading(true);
-      const { data } = await axiosSecure.post(`/orders`, { cart });
+      const { data } = await axiosSecure.post(`/orders/new`, { cart });
       if (data) {
         emptyCart();
         successAlert("Order placed successfully");
