@@ -1,9 +1,9 @@
-import Navbar from "../components/Navbar/Navbar";
+import React from "react";
 import { Outlet } from "react-router";
+import Navbar from "../../components/Navbar/Navbar";
 
-const Rootlayout = () => {
+const AdminLayout = () => {
   const Gap = () => <div className="min-h-24"></div>;
-
   return (
     <div>
       <Navbar />
@@ -13,4 +13,4 @@ const Rootlayout = () => {
   );
 };
 
-export default Rootlayout;
+export default AdminLayout;

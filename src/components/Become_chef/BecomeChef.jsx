@@ -1,50 +1,54 @@
 import React, { useContext, useState } from "react";
-
 import {
   FaArrowLeft,
   FaIdCard,
   FaPhone,
   FaHome,
-  FaMotorcycle,
   FaUser,
   FaFileSignature,
+  FaUtensils,
+  FaStore,
+  FaCertificate,
 } from "react-icons/fa";
 import AuthContext from "../../contexts/AuthContext";
 import { axiosSecure } from "../../axios/axiosSecure";
 import { errorAlert, successAlert } from "../../utils/alert";
 import { useLocation, useNavigate } from "react-router";
 
-const BecomeRider = () => {
+const BecomeChef = () => {
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
-  const {state: {name, email}} = useLocation()
+  const {
+    state: { name, email },
+  } = useLocation();
 
   const [loading, setLoading] = useState(false);
   const [successMsg, setSuccessMsg] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
 
-  
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMsg("");
     setSuccessMsg("");
+
     try {
       setLoading(true);
       const form = e.target;
       const formData = new FormData(form);
       const userData = Object.fromEntries(formData);
 
-      const { data } = await axiosSecure.put(`/users/become_rider/${user.id}`, {
+      const { data } = await axiosSecure.put(`/users/become_chef/${user.id}`, {
         userData,
       });
+
       if (data) {
-        successAlert("Form Submitted. Wait for Admin review");
+        console.log(data);
+        successAlert("Chef Application Submitted. Wait for Admin review!");
         navigate("/");
       }
-    } catch ({ response }) {
-      setErrorMsg(response?.data?.message);
-      errorAlert(response.data.message);
+    } catch ({response: {data}}) {
+      setErrorMsg(data.message);
+      errorAlert(data.message);
     } finally {
       setLoading(false);
     }
@@ -61,11 +65,11 @@ const BecomeRider = () => {
 
       <div className="bg-base-100 shadow-xl rounded-xl w-full max-w-lg p-8">
         <h2 className="text-3xl font-bold text-center text-primary mb-6">
-          Become a Rider 🛵
+          Become a Chef 👨‍🍳
         </h2>
 
         <p className="text-center mb-6 text-gray-600">
-          Fill in the required information to apply as a delivery rider.
+          Fill in the details to register as a Chef on RelishGo.
         </p>
 
         {successMsg && (
@@ -130,54 +134,71 @@ const BecomeRider = () => {
             />
           </label>
 
-          {/* NID */}
+          {/* Restaurant Name */}
           <label className="form-control">
             <span className="label-text font-medium flex items-center gap-2">
-              <FaIdCard /> NID Number
+              <FaStore /> Restaurant / Kitchen Name
             </span>
             <input
               type="text"
-              name="nidNumber"
+              name="restaurantName"
               required
               className="input input-bordered w-full"
-              placeholder="Your National ID number"
+              placeholder="Your restaurant or kitchen name"
             />
           </label>
 
-          {/* License */}
+          {/* Cuisine Type */}
           <label className="form-control">
             <span className="label-text font-medium flex items-center gap-2">
-              <FaIdCard /> Driving License Number
-            </span>
-            <input
-              type="text"
-              name="licenseNumber"
-              required
-              className="input input-bordered w-full"
-              placeholder="Driving license number"
-            />
-          </label>
-
-          {/* Vehicle Type */}
-          <label className="form-control">
-            <span className="label-text font-medium flex items-center gap-2">
-              <FaMotorcycle /> Vehicle Type
+              <FaUtensils /> Cuisine Type
             </span>
             <select
-              name="vehicleType"
+              name="cuisineType"
               required
               className="select select-bordered w-full"
             >
-              <option value="">Select vehicle type</option>
-              <option value="bike">Bike</option>
-              <option value="bicycle">Bicycle</option>
-              <option value="scooter">Scooter</option>
-              <option value="car">Car</option>
-              <option value="other">Other</option>
+              <option value="">Select cuisine type</option>
+              <option value="bangladeshi">Bangladeshi</option>
+              <option value="indian">Indian</option>
+              <option value="chinese">Chinese</option>
+              <option value="thai">Thai</option>
+              <option value="fast_food">Fast Food</option>
+              <option value="continental">Continental</option>
+              <option value="bakery">Bakery</option>
+              <option value="mixed">Mixed</option>
             </select>
           </label>
 
-          {/* Submit Button */}
+          {/* Experience */}
+          <label className="form-control">
+            <span className="label-text font-medium flex items-center gap-2">
+              <FaIdCard /> Years of Experience
+            </span>
+            <input
+              type="number"
+              name="experience"
+              min="0"
+              required
+              className="input input-bordered w-full"
+              placeholder="e.g. 3"
+            />
+          </label>
+
+          {/* Food Safety Certificate */}
+          <label className="form-control">
+            <span className="label-text font-medium flex items-center gap-2">
+              <FaCertificate /> Food Safety Certificate No.
+            </span>
+            <input
+              type="text"
+              name="certificateNumber"
+              className="input input-bordered w-full"
+              placeholder="Certificate number (if any)"
+            />
+          </label>
+
+          {/* Submit */}
           <button
             type="submit"
             disabled={loading}
@@ -191,4 +212,4 @@ const BecomeRider = () => {
   );
 };
 
-export default BecomeRider;
+export default BecomeChef;

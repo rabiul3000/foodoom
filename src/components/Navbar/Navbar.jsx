@@ -10,7 +10,7 @@ const Navbar = () => {
       {/* LEFT SECTION */}
       <div className="navbar-start">
         {/* Mobile Menu */}
-        <div className="dropdown">
+        <div className="dropdown lg:hidden" >
           <div tabIndex={0} role="button" className="btn btn-ghost lg:hidden">
             <FaGripLines className="text-xl" />
           </div>

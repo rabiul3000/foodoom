@@ -13,6 +13,11 @@ import BecomeRider from "./components/Become_rider/BecomeRider";
 import PaymentSuccessPage from "./pages/PaymentStatus/PaymentSuccessPage";
 import PaymentFailPage from "./pages/PaymentStatus/PaymentFailPage";
 import PaymentCancelPage from "./pages/PaymentStatus/PaymentCancelPage";
+import OrdersForAdmin from "./pages/OrdersForAdmin/OrdersForAdmin";
+import AdminLayout from "./layouts/AdminLayout/AdminLayout";
+import AdminRoute from "./middlewares/AdminRoute";
+import RiderRequests from "./pages/RiderRequests/RiderRequests";
+import BecomeChef from "./components/Become_chef/BecomeChef";
 
 const router = createBrowserRouter([
   {
@@ -51,6 +56,10 @@ const router = createBrowserRouter([
         path: "/orders/:id",
         element: <OrderDetail />,
       },
+      {
+        path: "/orders_for_admin",
+        element: <OrdersForAdmin />,
+      },
     ],
   },
   {
@@ -72,6 +81,32 @@ const router = createBrowserRouter([
       {
         path: "become_rider",
         element: <BecomeRider />,
+      },
+      {
+        path: "become_chef",
+        element: <BecomeChef />,
+      },
+    ],
+  },
+  {
+    path: "/admin",
+    element: <AdminLayout />,
+    children: [
+      {
+        path: "manage_orders",
+        element: (
+          <AdminRoute>
+            <OrdersForAdmin />
+          </AdminRoute>
+        ),
+      },
+      {
+        path: "rider_requests",
+        element: (
+          <AdminRoute>
+            <RiderRequests />
+          </AdminRoute>
+        ),
       },
     ],
   },

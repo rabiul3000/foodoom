@@ -18,7 +18,7 @@ const Profile = () => {
   const getUserProfile = useCallback(async (id) => {
     try {
       setLoading(true);
-      const { data } = await axiosPublic.get(`/users/${id}`);
+      const { data } = await axiosPublic.get(`/users/get_user/${id}`);
       setProfile(data);
     } catch (error) {
       console.log(error.message);
@@ -101,15 +101,26 @@ const Profile = () => {
           <button className="btn btn-primary btn-block mt-6">
             Edit Profile
           </button>
-          <div className="w-full flex justify-start items-start">
+          <div className="w-full flex flex-col justify-start items-start">
             <p className="text-sm text-bold text-gray-500 py-2">
               I want to become a{" "}
               <Link
                 className="text-sm text-blue-800 underline"
                 to={"/auth/become_rider"}
+                state={profile}
               >
                 {" "}
                 rider{" "}
+              </Link>
+            </p>
+            <p className="text-sm text-bold text-gray-500">
+              Register Your resturant and become a{" "}
+              <Link
+                className="text-sm text-blue-800 underline"
+                to={"/auth/become_chef"}
+                state={profile}
+              >
+                chef
               </Link>
             </p>
           </div>
