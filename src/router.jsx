@@ -16,8 +16,9 @@ import PaymentCancelPage from "./pages/PaymentStatus/PaymentCancelPage";
 import OrdersForAdmin from "./pages/OrdersForAdmin/OrdersForAdmin";
 import AdminLayout from "./layouts/AdminLayout/AdminLayout";
 import AdminRoute from "./middlewares/AdminRoute";
-import RiderRequests from "./pages/RiderRequests/RiderRequests";
 import BecomeChef from "./components/Become_chef/BecomeChef";
+import ChefRequests from "./pages/chefRequests/ChefRequests";
+import RiderRequests from "./pages/RiderRequests/RiderRequests";
 
 const router = createBrowserRouter([
   {
@@ -97,6 +98,14 @@ const router = createBrowserRouter([
         element: (
           <AdminRoute>
             <OrdersForAdmin />
+          </AdminRoute>
+        ),
+      },
+      {
+        path: "chef_requests",
+        element: (
+          <AdminRoute>
+            <ChefRequests />
           </AdminRoute>
         ),
       },

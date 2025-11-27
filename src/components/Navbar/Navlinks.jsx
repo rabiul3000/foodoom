@@ -32,7 +32,30 @@ const Navlinks = () => {
     },
     {
       path: "/admin/chef_requests",
-      name: "Chef Requests",
+      name: "Chef Requests ",
+    },
+    {
+      path: "/admin/manage_orders",
+      name: "Manage Orders",
+    },
+  ];
+
+  const riderLinks = [
+    {
+      path: "/foods",
+      name: "Foods",
+    },
+    {
+      path: "/orders",
+      name: "Orders",
+    },
+    {
+      path: "/admin/rider_requests",
+      name: "Rider Requests",
+    },
+    {
+      path: "/admin/chef_requests",
+      name: "Chef Requests ",
     },
     {
       path: "/admin/manage_orders",
@@ -42,25 +65,25 @@ const Navlinks = () => {
 
   return (
     <>
-      {role !== "admin"
-        ? links.map(({ path, name }) => (
-            <li key={path}>
-              {user ? (
-                <Link to={path}>{name}</Link>
-              ) : (
-                <span className="loading loading-ring"></span>
-              )}
-            </li>
-          ))
-        : adminLinks.map(({ path, name }) => (
-            <li key={path}>
-              {user ? (
-                <Link to={path}>{name}</Link>
-              ) : (
-                <span className="loading loading-ring"></span>
-              )}
-            </li>
-          ))}
+      {links.map(({ path, name }) => (
+        <li key={path}>
+          <Link to={path}>{name}</Link>
+        </li>
+      ))}
+
+      {role === "admin" &&
+        adminLinks.map(({ path, name }) => (
+          <li key={path}>
+            <Link to={path}>{name}</Link>
+          </li>
+        ))}
+
+      {role === "rider" &&
+        riderLinks.map(({ path, name }) => (
+          <li key={path}>
+            <Link to={path}>{name}</Link>
+          </li>
+        ))}
     </>
   );
 };

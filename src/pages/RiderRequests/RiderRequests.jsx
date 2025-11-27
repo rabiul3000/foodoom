@@ -8,7 +8,7 @@ const RiderRequests = () => {
   const { data, error, isLoading } = useQuery({
     queryKey: ["users", "rider_requests"],
     queryFn: async () => {
-      const res = await axiosSecure.get("/users/rider_requests");
+      const res = await axiosSecure.get("/users/riders");
       return res.data;
     },
     refetchOnWindowFocus: false,

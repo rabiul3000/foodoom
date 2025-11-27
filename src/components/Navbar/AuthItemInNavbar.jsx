@@ -5,6 +5,7 @@ import { Link, useNavigate } from "react-router";
 const AuthItemInNavbar = () => {
   const { user, loading, logOut } = useContext(AuthContext);
   const navigate = useNavigate();
+  console.log(user)
 
   return (
     <div className="navbar-end">
