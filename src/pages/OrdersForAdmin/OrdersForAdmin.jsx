@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { axiosSecure } from "../../axios/axiosSecure";
-import { format } from "date-fns";
+import { format, isToday, isYesterday } from "date-fns";
 import {
   FiLoader,
   FiAlertCircle,
@@ -17,102 +17,87 @@ import { errorAlert, successAlert } from "../../utils/alert";
 const OrdersForAdmin = () => {
   const [openRow, setOpenRow] = useState(null);
 
+  // Centralized action loading state
+  const [actionLoading, setActionLoading] = useState(false);
+
+  // Filter state
+  const [filters, setFilters] = useState({
+    status: null,
+    payment: null,
+    date: null,
+  });
+
+  // Fetch ALl Orders - Auto refresh
   const {
-    data = [],
+    data: orders = [],
     error,
     isLoading,
     refetch,
+    isFetching,
   } = useQuery({
-    queryKey: ["orders", "all_orders_admin"],
+    queryKey: ["orders_admin"],
     queryFn: async () => {
-      try {
-        const res = await axiosSecure.get("orders/all_orders_admin");
-        console.log(res.data);
-        return res.data;
-      } catch (err) {
-        console.error("❌ Error fetching all orders for admin:", err);
-      }
+      const res = await axiosSecure.get("orders/all_orders_admin");
+      return res.data;
     },
-    refetchOnWindowFocus: false,
+
+    refetchInterval: 10000, // 🔥 Auto-refresh every 4 seconds
+    refetchOnWindowFocus: false, // ❌ No refresh when tab becomes active
+    refetchOnReconnect: false, // ❌ No refresh when internet reconnects
+    refetchOnMount: false, // ❌ No refresh on component re-mount
   });
 
-  // ---- Action Functions ----
-  const handleMarkConfirm = async ({ _id: orderId, orderStatus }) => {
-    try {
-      if (orderStatus !== "pending") {
-        errorAlert("Order status is not valid for confirmation.");
-        return;
+  // ---------------------------
+  // FILTERING LOGIC (CLIENT SIDE)
+  // ---------------------------
+  const filteredOrders = useMemo(() => {
+    return orders.filter((order) => {
+      let valid = true;
+
+      // Status filter
+      if (filters.status) {
+        valid = valid && order.orderStatus === filters.status;
       }
-      const { data } = await axiosSecure.patch("orders/confirm_order", {
-        orderId,
-        prevOrderStatus: orderStatus,
-      });
+
+      // Payment filter
+      if (filters.payment) {
+        valid = valid && order.paymentStatus === filters.payment;
+      }
+
+      // Date filters
+      if (filters.date === "today") {
+        valid = valid && isToday(new Date(order.createdAt));
+      }
+      if (filters.date === "yesterday") {
+        valid = valid && isYesterday(new Date(order.createdAt));
+      }
+
+      return valid;
+    });
+  }, [orders, filters]);
+
+  // ---------------------------
+  // Action Handlers
+  // ---------------------------
+  const updateStatus = async (url, payload, successMessage) => {
+    try {
+      setActionLoading(true);
+      const { data } = await axiosSecure.patch(url, payload);
       if (data) {
-        successAlert("Order confirmed successfully.");
+        successAlert(successMessage);
         refetch();
       }
-    } catch (error) {
-      console.log(error);
+    } catch (err) {
+      console.log(err);
+      errorAlert("Failed to update order.");
+    } finally {
+      setActionLoading(false);
     }
   };
 
-  const handleMarkCooking = async (orderId) => {
-    try {
-      const { data } = await axiosSecure.patch("orders/cooking_order", {
-        orderId,
-      });
-      if (data) {
-        successAlert("Order cooked successfully.");
-        refetch();
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  const handleMarkOnWay = async (orderId) => {
-    try {
-      const { data } = await axiosSecure.patch("orders/onway_order", {
-        orderId,
-      });
-      if (data) {
-        successAlert("Order is on the way");
-        refetch();
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  const handleMarkDelivered = async (orderId) => {
-    try {
-      const { data } = await axiosSecure.patch("orders/delivered_order", {
-        orderId,
-      });
-      if (data) {
-        successAlert("Order has delivered.");
-        refetch();
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  const handleCancelOrder = async (orderId) => {
-    try {
-      const { data } = await axiosSecure.patch("orders/cancel_order", {
-        orderId,
-      });
-      if (data) {
-        successAlert("Order is cancelled.");
-        refetch();
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  // ---- Loading UI ----
+  // ---------------------------
+  // Loading UI
+  // ---------------------------
   if (isLoading) {
     return (
       <div className="flex flex-col items-center gap-3 mt-16">
@@ -122,7 +107,6 @@ const OrdersForAdmin = () => {
     );
   }
 
-  // ---- Error UI ----
   if (error) {
     return (
       <div className="flex flex-col items-center gap-3 mt-16 text-red-600">
@@ -135,27 +119,74 @@ const OrdersForAdmin = () => {
 
   return (
     <div className="p-6 w-full">
+      {/* Header */}
       <div className="flex items-center gap-2 mb-5">
         <MdOutlineFastfood className="text-3xl text-primary" />
         <h1 className="text-2xl font-bold">All Orders</h1>
-
-        <button
-          className="btn btn-sm btn-primary btn-soft ml-auto"
-          onClick={() => refetch()}
-        >
-          Refresh
+        <button className="btn btn-sm btn-primary ml-auto" onClick={refetch}>
+          {isFetching ? "Refreshing" : "Refresh"}
         </button>
       </div>
-      <div className="p-5 flex gap-2 ">
-        <button className="btn btn-sm btn-neutral">Today</button>
-        <button className="btn btn-sm btn-neutral">Yesterday</button>
-        <button className="btn btn-sm btn-neutral">Pending</button>
-        <button className="btn btn-sm btn-neutral">Paid</button>
-        <button className="btn btn-sm btn-neutral">Unpaid</button>
-        <button className="btn btn-sm btn-neutral">Confirmed</button>
-        <button className="btn btn-sm btn-neutral">Delivered</button>
+
+      {/* Filters */}
+      <div className="p-4 flex gap-2 flex-wrap">
+        <button
+          className="btn btn-sm"
+          onClick={() => setFilters({ ...filters, date: "today" })}
+        >
+          Today
+        </button>
+        <button
+          className="btn btn-sm"
+          onClick={() => setFilters({ ...filters, date: "yesterday" })}
+        >
+          Yesterday
+        </button>
+
+        <button
+          className="btn btn-sm"
+          onClick={() => setFilters({ ...filters, status: "pending" })}
+        >
+          Pending
+        </button>
+        <button
+          className="btn btn-sm"
+          onClick={() => setFilters({ ...filters, status: "confirmed" })}
+        >
+          Confirmed
+        </button>
+        <button
+          className="btn btn-sm"
+          onClick={() => setFilters({ ...filters, status: "delivered" })}
+        >
+          Delivered
+        </button>
+
+        <button
+          className="btn btn-sm"
+          onClick={() => setFilters({ ...filters, payment: "paid" })}
+        >
+          Paid
+        </button>
+        <button
+          className="btn btn-sm"
+          onClick={() => setFilters({ ...filters, payment: "unpaid" })}
+        >
+          Unpaid
+        </button>
+
+        {/* Reset filters */}
+        <button
+          className="btn btn-sm btn-outline"
+          onClick={() =>
+            setFilters({ status: null, payment: null, date: null })
+          }
+        >
+          Clear Filters
+        </button>
       </div>
 
+      {/* Table */}
       <div className="overflow-x-auto shadow-lg rounded-xl border border-gray-200">
         <table className="table table-zebra w-full">
           <thead className="bg-base-200">
@@ -174,16 +205,15 @@ const OrdersForAdmin = () => {
           </thead>
 
           <tbody>
-            {data?.map((order, index) => {
-              const totalItems = order?.cartItems?.length || 0;
-              const totalPieces = order?.cartItems?.reduce(
+            {filteredOrders.map((order, index) => {
+              const totalItems = order.cartItems?.length || 0;
+              const totalPieces = order.cartItems?.reduce(
                 (sum, item) => sum + item.piece,
                 0
               );
 
               return (
-                <React.Fragment key={order?._id}>
-                  {/* Main Row */}
+                <React.Fragment key={order._id}>
                   <tr>
                     <td>
                       <button
@@ -202,44 +232,43 @@ const OrdersForAdmin = () => {
 
                     <th>{index + 1}</th>
 
-                    <td className="font-semibold">{order?._id}</td>
+                    <td className="font-semibold">{order._id}</td>
 
-                    {/* Avatar + Name + Email + Link */}
+                    {/* Customer */}
                     <td>
                       <Link
-                        to={`/auth/profile/${order?.userId?.uid}`}
+                        to={`/auth/profile/${order.userId?.uid}`}
                         className="flex items-center gap-3 hover:opacity-80 transition"
                       >
                         <div className="avatar">
                           <div className="w-10 rounded-full">
                             <img
-                              src={order?.userId?.photoURL}
-                              alt={order?.userId?.name}
-                              referrerPolicy="no-referrer"
+                              src={order.userId?.photoURL}
+                              alt={order.userId?.name}
                             />
                           </div>
                         </div>
                         <div>
-                          <p className="font-semibold">{order?.userId?.name}</p>
+                          <p className="font-semibold">{order.userId?.name}</p>
                           <p className="text-xs text-gray-500">
-                            {order?.userId?.email}
+                            {order.userId?.email}
                           </p>
                         </div>
                       </Link>
                     </td>
 
-                    {/* Total Items & Pieces */}
+                    {/* Items */}
                     <td>
-                      <p className="font-semibold">{totalItems} items</p>
-                      <p className="text-xs text-gray-500">{totalPieces} pcs</p>
+                      <p>{totalItems} items</p>
+                      <p className="text-xs">{totalPieces} pcs</p>
                     </td>
 
                     {/* Amount */}
-                    <td className="font-semibold">${order?.totalAmount}</td>
+                    <td className="font-semibold">${order.totalAmount}</td>
 
-                    {/* Payment Status */}
+                    {/* Payment */}
                     <td>
-                      {order?.paymentStatus === "paid" ? (
+                      {order.paymentStatus === "paid" ? (
                         <span className="badge badge-success gap-1">
                           <FiCheckCircle /> Paid
                         </span>
@@ -250,73 +279,110 @@ const OrdersForAdmin = () => {
                       )}
                     </td>
 
-                    {/* Order Status */}
+                    {/* Status */}
                     <td>
                       <span
                         className={`badge ${
-                          order?.orderStatus === "delivered"
+                          order.orderStatus === "delivered"
                             ? "badge-success"
-                            : order?.orderStatus === "processing"
+                            : order.orderStatus === "processing"
                             ? "badge-info"
-                            : order?.orderStatus === "cancelled"
+                            : order.orderStatus === "cancelled"
                             ? "badge-error"
                             : "badge-neutral"
                         }`}
                       >
-                        {order?.orderStatus}
+                        {order.orderStatus}
                       </span>
                     </td>
 
-                    {/* Created Date */}
+                    {/* Created */}
                     <td className="text-sm">
-                      {format(order?.createdAt, "MMM dd, h:mm a")}
+                      {format(order.createdAt, "MMM dd, h:mm a")}
                     </td>
 
-                    {/* Action Buttons - PERFECT CENTER ALIGN */}
+                    {/* Actions */}
                     <td>
                       <div className="flex items-center justify-center gap-2">
                         <button
-                          onClick={() => handleMarkConfirm(order)}
+                          onClick={() =>
+                            updateStatus(
+                              "orders/confirm_order",
+                              {
+                                orderId: order._id,
+                                prevOrderStatus: order.orderStatus,
+                              },
+                              "Order confirmed"
+                            )
+                          }
+                          disabled={
+                            order.orderStatus !== "pending" || actionLoading
+                          }
                           className="btn btn-xs btn-primary"
-                          disabled={order?.orderStatus !== "pending"}
                         >
                           Confirm
                         </button>
+
                         <button
-                          onClick={() => handleMarkCooking(order?._id)}
-                          disabled={order?.orderStatus !== "confirmed"}
+                          onClick={() =>
+                            updateStatus(
+                              "orders/cooking_order",
+                              { orderId: order._id },
+                              "Order cooking"
+                            )
+                          }
+                          disabled={
+                            order.orderStatus !== "confirmed" || actionLoading
+                          }
                           className="btn btn-xs btn-secondary"
                         >
                           Cooking
                         </button>
 
                         <button
-                          onClick={() => handleMarkOnWay(order?._id)}
-                          disabled={order?.orderStatus !== "cooking"}
+                          onClick={() =>
+                            updateStatus(
+                              "orders/onway_order",
+                              { orderId: order._id },
+                              "On the way"
+                            )
+                          }
+                          disabled={
+                            order.orderStatus !== "cooking" || actionLoading
+                          }
                           className="btn btn-xs btn-warning"
                         >
-                          On way
+                          On Way
                         </button>
 
                         <button
-                          onClick={() => handleMarkDelivered(order?._id)}
-                          disabled={order?.orderStatus !== "onway"}
+                          onClick={() =>
+                            updateStatus(
+                              "orders/delivered_order",
+                              { orderId: order._id },
+                              "Delivered successfully"
+                            )
+                          }
+                          disabled={
+                            order.orderStatus !== "onway" || actionLoading
+                          }
                           className="btn btn-xs btn-success"
                         >
-                          {order?.orderStatus === "delivered" ? (
-                            <FiCheckCircle />
-                          ) : (
-                            <FiTruck />
-                          )}
                           Delivered
                         </button>
 
                         <button
-                          onClick={() => handleCancelOrder(order?._id)}
+                          onClick={() =>
+                            updateStatus(
+                              "orders/cancel_order",
+                              { orderId: order._id },
+                              "Order cancelled"
+                            )
+                          }
                           disabled={
-                            order?.orderStatus === "cooking" ||
-                            order?.orderStatus === "onway" ||
-                            order?.orderStatus === "delivered"
+                            ["cooking", "onway", "delivered"].includes(
+                              order.orderStatus
+                            ) || actionLoading
                           }
                           className="btn btn-xs btn-error"
                         >
@@ -336,28 +402,19 @@ const OrdersForAdmin = () => {
                           </h3>
 
                           <div className="grid md:grid-cols-3 gap-4">
-                            {order?.cartItems?.map((item) => (
+                            {order.cartItems?.map((item) => (
                               <div
                                 key={item._id}
-                                className="card bg-base-200 shadow-sm p-3"
+                                className="card bg-base-200 p-3"
                               >
-                                <figure>
-                                  <img
-                                    src={item.image}
-                                    alt={item.name}
-                                    className="w-full rounded-lg"
-                                    referrerPolicy="no-referrer"
-                                  />
-                                </figure>
-                                <div className="mt-2">
-                                  <h4 className="font-semibold">{item.name}</h4>
-                                  <p className="text-sm text-gray-600">
-                                    Qty: {item.piece}
-                                  </p>
-                                  <p className="text-sm text-gray-600">
-                                    Price: ${item.total_price}
-                                  </p>
-                                </div>
+                                <img src={item.image} className="rounded-lg" />
+                                <h4 className="font-semibold mt-2">
+                                  {item.name}
+                                </h4>
+                                <p className="text-sm">Qty: {item.piece}</p>
+                                <p className="text-sm">
+                                  Price: ${item.total_price}
+                                </p>
                               </div>
                             ))}
                           </div>
@@ -371,11 +428,8 @@ const OrdersForAdmin = () => {
           </tbody>
         </table>
 
-        {/* No Orders */}
-        {data?.length === 0 && (
-          <div className="text-center py-8 text-gray-600">
-            <p>No orders found.</p>
-          </div>
+        {filteredOrders.length === 0 && (
+          <div className="text-center py-8 text-gray-600">No orders found.</div>
         )}
       </div>
     </div>
