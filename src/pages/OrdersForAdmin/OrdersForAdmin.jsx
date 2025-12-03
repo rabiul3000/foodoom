@@ -12,6 +12,7 @@ import {
 } from "react-icons/fi";
 import { MdOutlineFastfood } from "react-icons/md";
 import { Link } from "react-router";
+import { errorAlert, successAlert } from "../../utils/alert";
 
 const OrdersForAdmin = () => {
   const [openRow, setOpenRow] = useState(null);
@@ -26,6 +27,7 @@ const OrdersForAdmin = () => {
     queryFn: async () => {
       try {
         const res = await axiosSecure.get("orders/all_orders_admin");
+        console.log(res.data);
         return res.data;
       } catch (err) {
         console.error("❌ Error fetching all orders for admin:", err);
@@ -34,10 +36,81 @@ const OrdersForAdmin = () => {
     refetchOnWindowFocus: false,
   });
 
-  // ---- Action Functions (EMPTY) ----
-  const handleApproveOrder = (orderId) => {};
-  const handleCancelOrder = (orderId) => {};
-  const handleMarkDelivered = (orderId) => {};
+  // ---- Action Functions ----
+  const handleMarkConfirm = async ({ _id: orderId, orderStatus }) => {
+    try {
+      if (orderStatus !== "pending") {
+        errorAlert("Order status is not valid for confirmation.");
+        return;
+      }
+      const { data } = await axiosSecure.patch("orders/confirm_order", {
+        orderId,
+        prevOrderStatus: orderStatus,
+      });
+      if (data) {
+        successAlert("Order confirmed successfully.");
+        refetch();
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const handleMarkCooking = async (orderId) => {
+    try {
+      const { data } = await axiosSecure.patch("orders/cooking_order", {
+        orderId,
+      });
+      if (data) {
+        successAlert("Order cooked successfully.");
+        refetch();
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const handleMarkOnWay = async (orderId) => {
+    try {
+      const { data } = await axiosSecure.patch("orders/onway_order", {
+        orderId,
+      });
+      if (data) {
+        successAlert("Order is on the way");
+        refetch();
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const handleMarkDelivered = async (orderId) => {
+    try {
+      const { data } = await axiosSecure.patch("orders/delivered_order", {
+        orderId,
+      });
+      if (data) {
+        successAlert("Order has delivered.");
+        refetch();
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const handleCancelOrder = async (orderId) => {
+    try {
+      const { data } = await axiosSecure.patch("orders/cancel_order", {
+        orderId,
+      });
+      if (data) {
+        successAlert("Order is cancelled.");
+        refetch();
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   // ---- Loading UI ----
   if (isLoading) {
@@ -134,7 +207,7 @@ const OrdersForAdmin = () => {
                     {/* Avatar + Name + Email + Link */}
                     <td>
                       <Link
-                        to={`/admin/user/${order?.userId?._id}`}
+                        to={`/auth/profile/${order?.userId?.uid}`}
                         className="flex items-center gap-3 hover:opacity-80 transition"
                       >
                         <div className="avatar">
@@ -142,6 +215,7 @@ const OrdersForAdmin = () => {
                             <img
                               src={order?.userId?.photoURL}
                               alt={order?.userId?.name}
+                              referrerPolicy="no-referrer"
                             />
                           </div>
                         </div>
@@ -202,34 +276,48 @@ const OrdersForAdmin = () => {
                     <td>
                       <div className="flex items-center justify-center gap-2">
                         <button
-                          onClick={() => handleApproveOrder(order?._id)}
-                          className="btn btn-xs btn-info"
+                          onClick={() => handleMarkConfirm(order)}
+                          className="btn btn-xs btn-primary"
+                          disabled={order?.orderStatus !== "pending"}
                         >
-                          Confirmed
+                          Confirm
                         </button>
                         <button
-                          onClick={() => handleApproveOrder(order?._id)}
-                          className="btn btn-xs btn-info"
+                          onClick={() => handleMarkCooking(order?._id)}
+                          disabled={order?.orderStatus !== "confirmed"}
+                          className="btn btn-xs btn-secondary"
                         >
                           Cooking
                         </button>
 
                         <button
-                          onClick={() => handleApproveOrder(order?._id)}
-                          className="btn btn-xs btn-info"
+                          onClick={() => handleMarkOnWay(order?._id)}
+                          disabled={order?.orderStatus !== "cooking"}
+                          className="btn btn-xs btn-warning"
                         >
                           On way
                         </button>
 
                         <button
                           onClick={() => handleMarkDelivered(order?._id)}
+                          disabled={order?.orderStatus !== "onway"}
                           className="btn btn-xs btn-success"
                         >
-                          <FiTruck /> Delivered
+                          {order?.orderStatus === "delivered" ? (
+                            <FiCheckCircle />
+                          ) : (
+                            <FiTruck />
+                          )}
+                          Delivered
                         </button>
 
                         <button
                           onClick={() => handleCancelOrder(order?._id)}
+                          disabled={
+                            order?.orderStatus === "cooking" ||
+                            order?.orderStatus === "onway" ||
+                            order?.orderStatus === "delivered"
+                          }
                           className="btn btn-xs btn-error"
                         >
                           Delete
@@ -258,6 +346,7 @@ const OrdersForAdmin = () => {
                                     src={item.image}
                                     alt={item.name}
                                     className="w-full rounded-lg"
+                                    referrerPolicy="no-referrer"
                                   />
                                 </figure>
                                 <div className="mt-2">

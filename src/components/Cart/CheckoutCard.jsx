@@ -18,6 +18,7 @@ const CheckoutCard = () => {
         navigate("/orders");
       }
     } catch (error) {
+      console.error( error);
       errorAlert(error.message);
     } finally {
       setLoading(false);

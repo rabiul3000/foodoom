@@ -7,6 +7,7 @@ import { axiosPublic } from "../../axios/axiosPublic";
 import { errorAlert, successAlert } from "../../utils/alert";
 import { filterKeyWords, tableHeaders } from "../../utils/arrays";
 import { useNavigate } from "react-router";
+import { axiosSecure } from "../../axios/axiosSecure";
 
 const Orders = () => {
   const { user } = useContext(AuthContext);
@@ -18,7 +19,7 @@ const Orders = () => {
   const getAllOrders = useCallback(async (user) => {
     try {
       setLoading(true);
-      const { data } = await axiosPublic.get(`orders/${user?.id}`);
+      const { data } = await axiosSecure.get(`orders/${user?.id}`);
       if (data) {
         console.log(data);
         setOrders(data);
@@ -84,7 +85,7 @@ const Orders = () => {
 
   const payOrder = async (order) => {
     try {
-      const { data } = await axiosPublic.post("/payments", {
+      const { data } = await axiosPublic.post("/payments/new", {
         orderId: order._id,
       });
       if (data?.url) window.location.replace(data.url);
