@@ -264,7 +264,7 @@ const OrdersForAdmin = () => {
                     </td>
 
                     {/* Amount */}
-                    <td className="font-semibold">${order.totalAmount}</td>
+                    <td className="font-semibold">{order.totalAmount}</td>
 
                     {/* Payment */}
                     <td>
@@ -413,7 +413,7 @@ const OrdersForAdmin = () => {
                                 </h4>
                                 <p className="text-sm">Qty: {item.piece}</p>
                                 <p className="text-sm">
-                                  Price: ${item.total_price}
+                                  Price: ৳{item.total_price}
                                 </p>
                               </div>
                             ))}
