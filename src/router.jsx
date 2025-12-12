@@ -19,6 +19,7 @@ import AdminRoute from "./middlewares/AdminRoute";
 import BecomeChef from "./components/Become_chef/BecomeChef";
 import ChefRequests from "./pages/chefRequests/ChefRequests";
 import RiderRequests from "./pages/RiderRequests/RiderRequests";
+import OrderDetailForAdmin from "./pages/orders/OrderDetailForAdmin";
 
 const router = createBrowserRouter([
   {
@@ -52,6 +53,10 @@ const router = createBrowserRouter([
       {
         path: "/orders",
         element: <Orders />,
+      },
+        {
+        path: "/order/:id",
+        element: <OrderDetailForAdmin />,
       },
       {
         path: "/orders/:id",
