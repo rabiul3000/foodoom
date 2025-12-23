@@ -1,9 +1,10 @@
 import React from "react";
-import { useLocation } from "react-router";
+import { useLocation, useNavigate } from "react-router";
 import dateFormat from "../../utils/dateFormat";
 import { format } from "timeago.js";
 
 const OrderDetailForAdmin = () => {
+  const navigate = useNavigate();
   const { state: item } = useLocation();
 
   const {
@@ -110,9 +111,8 @@ const OrderDetailForAdmin = () => {
             </div>
           </div>
         </div>
-        <div className="flex py-8 justify-end w-full gap-6">
-          <button className="btn btn-outline btn-success">Accept Order</button>
-          <button className="btn btn-secondary"> Reject Order </button>
+        <div className="flex py-8 justify-start w-full gap-6">
+          <button className="btn btn-outline btn-success" onClick={() => navigate(-1)}>Back</button>          
         </div>
       </div>
     </div>

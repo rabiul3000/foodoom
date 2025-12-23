@@ -1,10 +1,14 @@
-import React from "react";
+import React, { useState } from "react";
 import { format } from "timeago.js";
 import dateFormat from "../../utils/dateFormat";
 import { CiCircleMore } from "react-icons/ci";
 import { Link } from "react-router";
 
+import { axiosSecure } from "../../axios/axiosSecure";
+import { errorAlert } from "../../utils/alert";
+
 const TableRowForAdmin = ({ item }) => {
+  const [data, setData] = useState(item);
   const {
     _id,
     userId: { uid, email, name, photoURL },
@@ -23,7 +27,93 @@ const TableRowForAdmin = ({ item }) => {
     storeAmount,
     transactionId,
     validationId,
-  } = item;
+  } = data;
+
+  const [loading, setLoading] = useState(false);
+
+  const handleMarkConfirm = async () => {
+    try {
+      setLoading(true);
+      if (paymentStatus !== "paid") {
+        errorAlert("still not paid");
+        return;
+      }
+      const res = await axiosSecure.patch("orders/confirm_order", {
+        orderId: _id,
+        prevOrderStatus: orderStatus,
+      });
+      if (res.status === 200) {
+        console.log(res);
+        setData((prev) => ({
+          ...prev,
+          orderStatus: "confirmed",
+        }));
+      }
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleMarkCooking = async () => {
+    try {
+      setLoading(true);
+      const res = await axiosSecure.patch("orders/cooking_order", {
+        orderId: _id,
+      });
+      if (res.status === 200) {
+        console.log(res);
+        setData((prev) => ({
+          ...prev,
+          orderStatus: "cooking",
+        }));
+      }
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+  const handleMarkOnway = async () => {
+    try {
+      setLoading(true);
+      const res = await axiosSecure.patch("orders/onway_order", {
+        orderId: _id,
+      });
+      if (res.status === 200) {
+        console.log(res);
+        setData((prev) => ({
+          ...prev,
+          orderStatus: "onway",
+        }));
+      }
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleMarkDeliverd = async () => {
+    try {
+      setLoading(true);
+      const res = await axiosSecure.patch("orders/delivered_order", {
+        orderId: _id,
+      });
+      if (res.status === 200) {
+        console.log(res);
+        setData((prev) => ({
+          ...prev,
+          orderStatus: "delivered",
+        }));
+      }
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <tr>
@@ -31,7 +121,7 @@ const TableRowForAdmin = ({ item }) => {
         <div className="flex items-center gap-3">
           <div className="avatar">
             <div className="mask mask-squircle h-12 w-12">
-              <img src={photoURL} alt="avatar" referrerPolicy="no-referrer" />
+              <img src={photoURL} alt={uid} referrerPolicy="no-referrer" />
             </div>
           </div>
           <div>
@@ -43,11 +133,20 @@ const TableRowForAdmin = ({ item }) => {
 
       <td>
         <div>
-          <Link to={`/order/${_id}`} state={item}>
+          <Link to={`/order/${_id}`} state={data}>
             {_id}
           </Link>
         </div>
       </td>
+
+      <td>
+        <div>{transactionId || "-"}</div>
+      </td>
+
+      <td>
+        <div>{cardIssuer || "-"}</div>
+      </td>
+
       <td>
         <div>
           <button
@@ -78,7 +177,8 @@ const TableRowForAdmin = ({ item }) => {
                 : orderStatus === "pending"
                 ? "btn-ghost"
                 : "btn-warning"
-            } btn-active`}dateTime
+            } btn-active`}
+            dateTime
           >
             {orderStatus}
           </button>
@@ -86,10 +186,63 @@ const TableRowForAdmin = ({ item }) => {
       </td>
 
       <td>
-        <div>
-          <button className="btn btn-circle btn-ghost text-2xl">
+        <div className="dropdown dropdown-end">
+          <div tabIndex={0} role="button" className="btn m-1">
             <CiCircleMore />
-          </button>
+          </div>
+          <div
+            tabIndex="-1"
+            className="dropdown-content menu bg-base-100 rounded-box z-1 w-52 p-2 shadow-sm space-y-2"
+          >
+            {orderStatus === "pending" && (
+              <button
+                className={`btn btn-sm "btn-primary" btn-soft capitalize`}
+                onClick={() => handleMarkConfirm()}
+              >
+                {loading ? (
+                  <span className="loading loading-sm loading-spinner"> </span>
+                ) : (
+                  "confirmed"
+                )}
+              </button>
+            )}
+            {orderStatus === "confirmed" && (
+              <button
+                className={`btn btn-sm "btn-primary" btn-soft capitalize`}
+                onClick={() => handleMarkCooking()}
+              >
+                {loading ? (
+                  <span className="loading loading-sm loading-spinner"> </span>
+                ) : (
+                  "cooking"
+                )}
+              </button>
+            )}
+            {orderStatus === "cooking" && (
+              <button
+                className={`btn btn-sm "btn-primary" btn-soft capitalize`}
+                onClick={() => handleMarkOnway()}
+              >
+                {loading ? (
+                  <span className="loading loading-sm loading-spinner"> </span>
+                ) : (
+                  "onway"
+                )}
+              </button>
+            )}
+            {orderStatus === "onway" && (
+              <button
+                className={`btn btn-sm "btn-primary" btn-soft capitalize`}
+                onClick={() => handleMarkDeliverd()}
+              >
+                {loading ? (
+                  <span className="loading loading-sm loading-spinner"> </span>
+                ) : (
+                  "Delivered"
+                )}
+              </button>
+            )}
+          </div>
         </div>
       </td>
     </tr>
