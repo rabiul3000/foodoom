@@ -1,6 +1,8 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { useParams, useNavigate, Link } from "react-router";
+import { useParams, useNavigate } from "react-router";
 import { axiosPublic } from "../../../axios/axiosPublic";
+import { axiosSecure } from "../../../axios/axiosSecure";
+import { successAlert } from "./../../../utils/alert";
 import {
   FaUserCircle,
   FaEnvelope,
@@ -12,9 +14,12 @@ import {
 const Profile = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [phoneNumber, setPhoneNumber] = useState("");
 
+  /* Fetch user profile */
   const getUserProfile = useCallback(async (id) => {
     try {
       setLoading(true);
@@ -30,6 +35,31 @@ const Profile = () => {
   useEffect(() => {
     getUserProfile(id);
   }, [id, getUserProfile]);
+
+  /* Initialize phone number once profile loads */
+  useEffect(() => {
+    if (profile?.phone) {
+      setPhoneNumber(profile.phone);
+    }
+  }, [profile]);
+
+  /* Update phone number */
+  const handleUpdateProfile = async () => {
+    try {
+      setLoading(true);
+      const { data } = await axiosSecure.patch(`/users/update_user/${id}`, {
+        phoneNumber,
+      });
+      setProfile((prev) => ({ ...prev, phone: phoneNumber }));
+      if (data.status === 200) {
+        successAlert("profile updated");
+      }
+    } catch (error) {
+      console.log(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -47,8 +77,6 @@ const Profile = () => {
     );
   }
 
-  console.log(profile);
-
   return (
     <div className="min-h-screen bg-base-200 flex justify-center items-center py-10 px-4 relative">
       {/* Back Button */}
@@ -62,7 +90,7 @@ const Profile = () => {
       {/* Profile Card */}
       <div className="bg-base-100 shadow-xl rounded-2xl max-w-md w-full p-6 sm:p-8">
         <div className="flex flex-col items-center text-center">
-          {/* Profile Photo */}
+          {/* Avatar */}
           <div className="avatar mb-4">
             <div className="w-32 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2">
               {profile.photoURL ? (
@@ -73,11 +101,11 @@ const Profile = () => {
             </div>
           </div>
 
-          {/* Name + Email */}
+          {/* Name & Email */}
           <h2 className="text-2xl font-semibold text-primary mb-1">
             {profile.name}
           </h2>
-          <p className="text-sm text-gray-500 flex items-center justify-center gap-1">
+          <p className="text-sm text-gray-500 flex items-center gap-1">
             <FaEnvelope /> {profile.email}
           </p>
 
@@ -86,44 +114,39 @@ const Profile = () => {
             {profile.role}
           </div>
 
-          <div className="divider my-6"></div>
+          <div className="divider my-6" />
 
           {/* User ID */}
           <div className="w-full text-left flex items-center gap-2">
             <FaIdBadge className="text-primary" />
             <p className="text-gray-600 break-all text-sm">
-              <span className="font-semibold text-base-content">User ID:</span>{" "}
-              {profile._id}
+              <span className="font-semibold">User ID:</span> {profile._id}
             </p>
           </div>
 
-          {/* Button */}
-          <button className="btn btn-primary btn-block mt-6">
-            Edit Profile
-          </button>
-          <div className="w-full flex flex-col justify-start items-start">
-            <p className="text-sm text-bold text-gray-500 py-2">
-              I want to become a{" "}
-              <Link
-                className="text-sm text-blue-800 underline"
-                to={"/auth/become_rider"}
-                state={profile}
-              >
-                {" "}
-                rider{" "}
-              </Link>
-            </p>
-            <p className="text-sm text-bold text-gray-500">
-              Register Your resturant and become a{" "}
-              <Link
-                className="text-sm text-blue-800 underline"
-                to={"/auth/become_chef"}
-                state={profile}
-              >
-                chef
-              </Link>
-            </p>
+          {/* Phone Input */}
+          <div className="w-full text-left flex items-center gap-2 text-sm mt-8">
+            <span className="font-semibold">Phone:</span>
+            <input
+              type="tel"
+              inputMode="numeric"
+              className="input input-primary w-full"
+              value={phoneNumber}
+              onChange={(e) =>
+                setPhoneNumber(e.target.value.replace(/\D/g, ""))
+              }
+              placeholder="Enter phone number"
+            />
           </div>
+
+          {/* Update Button */}
+          <button
+            className="btn btn-primary btn-block mt-6"
+            onClick={handleUpdateProfile}
+            disabled={phoneNumber === profile.phone}
+          >
+            Update Profile
+          </button>
         </div>
       </div>
     </div>

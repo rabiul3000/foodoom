@@ -94,8 +94,7 @@ const Orders = () => {
     }
   };
 
-  const showOrder = (order) =>
-    navigate(`/orders/${order._id}`, { state: order });
+  const showOrder = (order) => navigate(`/orders/${order._id}`, { state: order });
 
   return (
     <div className="w-11/12 mx-auto flex flex-col gap-8">
